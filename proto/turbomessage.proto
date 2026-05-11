@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package turbomessage.v1;
+
+service TurboMessageService {
+  rpc Register(AuthRequest) returns (UserResponse);
+  rpc Login(AuthRequest) returns (UserResponse);
+  rpc SendEmail(SendEmailRequest) returns (IdResponse);
+  rpc ListEmails(ListEmailsRequest) returns (EmailsResponse);
+  rpc ReadEmail(EmailActionRequest) returns (EmailResponse);
+  rpc DeleteEmail(EmailActionRequest) returns (EmptyResponse);
+}
+
+message AuthRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message SendEmailRequest {
+  string sender_id = 1;
+  string recipient_id = 2;
+  string subject = 3;
+  string body = 4;
+}
+
+message ListEmailsRequest {
+  string user_id = 1;
+}
+
+message Email {
+  int64 id = 1;
+  string sender_id = 2;
+  string recipient_id = 3;
+  string subject = 4;
+  string body = 5;
+  bool is_read = 6;
+  int64 created_at_unix = 7;
+}
+
+message EmailActionRequest {
+  string user_id = 1;
+  int64 email_id = 2;
+}
+
+message Result {
+  bool ok = 1;
+  string message = 2;
+}
+
+message EmptyResponse {
+  Result result = 1;
+}
+
+message IdResponse {
+  Result result = 1;
+  int64 id = 2;
+}
+
+message UserResponse {
+  Result result = 1;
+  string user_id = 2;
+}
+
+message EmailResponse {
+  Result result = 1;
+  Email email = 2;
+}
+
+message EmailsResponse {
+  Result result = 1;
+  repeated Email emails = 2;
+}
