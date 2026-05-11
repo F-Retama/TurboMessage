@@ -1,36 +1,61 @@
 # Proyecto Omega - TurboMessage
 
-Implementacion de un sistema simple de mensajeria estilo e-mail llamado **TurboMessage**.
+TurboMessage es un sistema simple de mensajeria tipo e-mail.
 
-## Stack tecnologico
+## Logica de alto nivel
 
-- **Back-end de logica de negocio:** gRPC + Protocol Buffers
-- **Front-end web:** Django (solo para exponer/consumir servicios gRPC y renderizar templates)
-- **Persistencia:** archivos o base de datos (sin modelos de Django)
+- `proto/turbomessage.proto` define el contrato gRPC.
+- `grpc_server/` implementa la logica de negocio y persistencia.
+- `django_ui/` funciona como cliente web (templates + consumo gRPC).
+- La persistencia se hace con SQLite desde el servidor gRPC.
+- Django no usa ORM/modelos para la logica del dominio.
 
-
-## Estructura inicial
+## Estructura actual
 
 ```text
 .
-|-- grpc_server/
-|   |-- app.py
-|   |-- db/
-|   |-- repositories/
-|   |-- services/
-|   `-- generated/
-|-- django_ui/
-|   |-- turbo_ui/
-|   `-- apps/mailbox/
 |-- proto/
-|-- scripts/
+|   `-- turbomessage.proto
+|-- grpc_server/
+|-- django_ui/
+`-- requirements.txt
 ```
 
-## Persistencia en base de datos
+## Setup local
 
-- Se usara SQLite desde el backend gRPC con `sqlite3` nativo de Python.
-- Django queda solo como front-end y cliente gRPC.
-- No se usaran modelos ni ORM de Django.
+1. Crear y activar entorno virtual:
 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-## Despliegue
+2. Instalar librerias principales:
+
+```bash
+pip install "Django>=5.0,<6.0" "grpcio>=1.65.0" "grpcio-tools>=1.65.0" "protobuf>=5.0.0"
+```
+
+## Despliegue local (desarrollo)
+
+```bash
+# Terminal 1: backend gRPC
+source .venv/bin/activate
+python -m grpc_server.server
+
+# Terminal 2: frontend Django
+source .venv/bin/activate
+cd django_ui
+python manage.py runserver 0.0.0.0:8000
+```
+
+## Generacion de stubs gRPC
+
+```bash
+source .venv/bin/activate
+python -m grpc_tools.protoc \
+  -I proto \
+  --python_out=grpc_server/generated \
+  --grpc_python_out=grpc_server/generated \
+  proto/turbomessage.proto
+```
