@@ -23,3 +23,10 @@ Thumbs.db
 
 # Local planning/checklists
 CHECKLIST_LINEAMIENTOS.md
+
+# Local database and generated gRPC code
+grpc_server/data/*.db
+grpc_server/generated/*.py
+
+# Local helper scripts
+scripts/

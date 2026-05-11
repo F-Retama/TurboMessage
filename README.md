@@ -8,6 +8,29 @@ Implementacion de un sistema simple de mensajeria estilo e-mail llamado **TurboM
 - **Front-end web:** Django (solo para exponer/consumir servicios gRPC y renderizar templates)
 - **Persistencia:** archivos o base de datos (sin modelos de Django)
 
-## Documentacion de lineamientos
 
-- Ver [CHECKLIST_LINEAMIENTOS.md](./CHECKLIST_LINEAMIENTOS.md) para la lista de cotejo transcrita desde `Lineamientos_Omega.pdf`.
+## Estructura inicial
+
+```text
+.
+|-- grpc_server/
+|   |-- app.py
+|   |-- db/
+|   |-- repositories/
+|   |-- services/
+|   `-- generated/
+|-- django_ui/
+|   |-- turbo_ui/
+|   `-- apps/mailbox/
+|-- proto/
+|-- scripts/
+```
+
+## Persistencia en base de datos
+
+- Se usara SQLite desde el backend gRPC con `sqlite3` nativo de Python.
+- Django queda solo como front-end y cliente gRPC.
+- No se usaran modelos ni ORM de Django.
+
+
+## Despliegue
