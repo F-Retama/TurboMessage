@@ -17,6 +17,8 @@ if str(GENERATED_DIR) not in sys.path:
 import turbomessage_pb2  # type: ignore  # noqa: E402
 import turbomessage_pb2_grpc  # type: ignore  # noqa: E402
 
+DEFAULT_GRPC_PORT = 36933
+
 
 class TurboMessageService(turbomessage_pb2_grpc.TurboMessageServiceServicer):
     def __init__(self, storage: Storage) -> None:
@@ -40,14 +42,14 @@ class TurboMessageService(turbomessage_pb2_grpc.TurboMessageServiceServicer):
 
     def Register(self, request, context):  # noqa: N802 (gRPC naming)
         ok, message, user_id = self.storage.register(request.username, request.password)
-        return turbomessage_pb2.UserResponse(
+        return turbomessage_pb2.UserReply(
             result=self._result(ok, message),
             user_id=user_id if ok else "",
         )
 
     def Login(self, request, context):  # noqa: N802
         ok, message, user_id = self.storage.login(request.username, request.password)
-        return turbomessage_pb2.UserResponse(
+        return turbomessage_pb2.UserReply(
             result=self._result(ok, message),
             user_id=user_id if ok else "",
         )
@@ -59,31 +61,31 @@ class TurboMessageService(turbomessage_pb2_grpc.TurboMessageServiceServicer):
             request.subject,
             request.body,
         )
-        return turbomessage_pb2.IdResponse(
+        return turbomessage_pb2.IdReply(
             result=self._result(ok, message),
             id=email_id if ok else 0,
         )
 
     def ListEmails(self, request, context):  # noqa: N802
         ok, message, emails = self.storage.list_emails(request.user_id)
-        return turbomessage_pb2.EmailsResponse(
+        return turbomessage_pb2.EmailsReply(
             result=self._result(ok, message),
             emails=[self._email_message(email) for email in emails],
         )
 
     def ReadEmail(self, request, context):  # noqa: N802
         ok, message, email = self.storage.read_email(request.user_id, request.email_id)
-        return turbomessage_pb2.EmailResponse(
+        return turbomessage_pb2.EmailReply(
             result=self._result(ok, message),
             email=self._email_message(email) if ok and email else turbomessage_pb2.Email(),
         )
 
     def DeleteEmail(self, request, context):  # noqa: N802
         ok, message = self.storage.delete_email(request.user_id, request.email_id)
-        return turbomessage_pb2.EmptyResponse(result=self._result(ok, message))
+        return turbomessage_pb2.EmptyReply(result=self._result(ok, message))
 
 
-def serve(host: str = "0.0.0.0", port: int = 50051) -> grpc.Server:
+def serve(host: str = "0.0.0.0", port: int = DEFAULT_GRPC_PORT) -> grpc.Server:
     storage = Storage()
     storage.init_db()
 
@@ -98,8 +100,8 @@ def serve(host: str = "0.0.0.0", port: int = 50051) -> grpc.Server:
 
 
 def main() -> None:
-    server = serve(host="0.0.0.0", port=50051)
-    print("TurboMessage gRPC server running on 0.0.0.0:50051")
+    server = serve(host="0.0.0.0", port=DEFAULT_GRPC_PORT)
+    print(f"TurboMessage gRPC server running on 0.0.0.0:{DEFAULT_GRPC_PORT}")
     server.wait_for_termination()
 
 

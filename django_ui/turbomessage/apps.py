@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MailboxConfig(AppConfig):
+class TurbomessageConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.mailbox"
+    name = "turbomessage"

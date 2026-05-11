@@ -1,0 +1,104 @@
+{% extends "turbomessage/base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h2 style="margin-top: 0;">Bandeja</h2>
+  <p class="muted" style="margin-top: 0;">Vista unificada separada en entrada y salida.</p>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <h3 style="margin-top: 0;">Entrada ({{ inbox|length }})</h3>
+    {% if inbox %}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>De</th>
+            <th>Tema</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in inbox %}
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.sender_id|slice:":8" }}</td>
+              <td>
+                <div>{{ e.subject }}</div>
+                <small class="muted">{{ e.created_at }}</small>
+              </td>
+              <td>
+                {% if e.is_read %}
+                  <span class="pill read">Leido</span>
+                {% else %}
+                  <span class="pill unread">No leido</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="actions">
+                  <a class="link" href="{% url 'turbomessage_email_detail' e.id %}">Abrir</a>
+                  <form method="post" action="{% url 'turbomessage_email_delete' e.id %}">
+                    {% csrf_token %}
+                    <button class="danger" type="submit">Borrar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Sin correos de entrada.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3 style="margin-top: 0;">Salida ({{ outbox|length }})</h3>
+    {% if outbox %}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Para</th>
+            <th>Tema</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in outbox %}
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.recipient_id|slice:":8" }}</td>
+              <td>
+                <div>{{ e.subject }}</div>
+                <small class="muted">{{ e.created_at }}</small>
+              </td>
+              <td>
+                {% if e.is_read %}
+                  <span class="pill read">Leido</span>
+                {% else %}
+                  <span class="pill unread">No leido</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="actions">
+                  <a class="link" href="{% url 'turbomessage_email_detail' e.id %}">Abrir</a>
+                  <form method="post" action="{% url 'turbomessage_email_delete' e.id %}">
+                    {% csrf_token %}
+                    <button class="danger" type="submit">Borrar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Sin correos en salida.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

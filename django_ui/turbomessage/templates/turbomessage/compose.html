@@ -1,0 +1,25 @@
+{% extends "turbomessage/base.html" %}
+
+{% block content %}
+<section class="panel" style="max-width: 760px;">
+  <h2 style="margin-top: 0;">Nuevo correo</h2>
+  <p class="muted">Usa el ID del destinatario (el identificador alfanumerico del usuario).</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="row">
+      <label for="recipient_id">ID del destinatario</label>
+      <input id="recipient_id" name="recipient_id" required />
+    </div>
+    <div class="row">
+      <label for="subject">Tema</label>
+      <input id="subject" name="subject" required />
+    </div>
+    <div class="row">
+      <label for="body">Mensaje</label>
+      <textarea id="body" name="body" required></textarea>
+    </div>
+    <button type="submit">Enviar correo</button>
+  </form>
+</section>
+{% endblock %}

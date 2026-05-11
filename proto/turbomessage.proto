@@ -3,12 +3,12 @@ syntax = "proto3";
 package turbomessage.v1;
 
 service TurboMessageService {
-  rpc Register(AuthRequest) returns (UserResponse);
-  rpc Login(AuthRequest) returns (UserResponse);
-  rpc SendEmail(SendEmailRequest) returns (IdResponse);
-  rpc ListEmails(ListEmailsRequest) returns (EmailsResponse);
-  rpc ReadEmail(EmailActionRequest) returns (EmailResponse);
-  rpc DeleteEmail(EmailActionRequest) returns (EmptyResponse);
+  rpc Register(AuthRequest) returns (UserReply);
+  rpc Login(AuthRequest) returns (UserReply);
+  rpc SendEmail(SendEmailRequest) returns (IdReply);
+  rpc ListEmails(ListEmailsRequest) returns (EmailsReply);
+  rpc ReadEmail(EmailActionRequest) returns (EmailReply);
+  rpc DeleteEmail(EmailActionRequest) returns (EmptyReply);
 }
 
 message AuthRequest {
@@ -47,26 +47,26 @@ message Result {
   string message = 2;
 }
 
-message EmptyResponse {
+message EmptyReply {
   Result result = 1;
 }
 
-message IdResponse {
+message IdReply {
   Result result = 1;
   int64 id = 2;
 }
 
-message UserResponse {
+message UserReply {
   Result result = 1;
   string user_id = 2;
 }
 
-message EmailResponse {
+message EmailReply {
   Result result = 1;
   Email email = 2;
 }
 
-message EmailsResponse {
+message EmailsReply {
   Result result = 1;
   repeated Email emails = 2;
 }

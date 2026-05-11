@@ -1,0 +1,40 @@
+{% extends "turbomessage/base.html" %}
+
+{% block content %}
+<section class="panel" style="max-width: 760px;">
+  <h2 style="margin-top: 0;">Correo #{{ email.id }}</h2>
+
+  <p class="muted" style="margin-top: 0;">
+    {% if is_sender %}
+      Eres emisor.
+    {% elif is_recipient %}
+      Eres receptor.
+    {% endif %}
+  </p>
+
+  <div class="row"><strong>De:</strong> {{ email.sender_id }}</div>
+  <div class="row"><strong>Para:</strong> {{ email.recipient_id }}</div>
+  <div class="row"><strong>Tema:</strong> {{ email.subject }}</div>
+  <div class="row"><strong>Fecha:</strong> {{ email.created_at }}</div>
+  <div class="row">
+    <strong>Estado:</strong>
+    {% if email.is_read %}
+      <span class="pill read">Leido</span>
+    {% else %}
+      <span class="pill unread">No leido</span>
+    {% endif %}
+  </div>
+
+  <hr style="border: 0; border-top: 1px solid #dde2ea; margin: 1rem 0;" />
+
+  <p style="white-space: pre-wrap; margin-top: 0;">{{ email.body }}</p>
+
+  <div class="actions" style="margin-top: 1rem;">
+    <a class="link" href="{% url 'turbomessage_dashboard' %}">Volver</a>
+    <form method="post" action="{% url 'turbomessage_email_delete' email.id %}">
+      {% csrf_token %}
+      <button class="danger" type="submit">Borrar</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TurboMessage</title>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --panel: #ffffff;
+        --text: #1d2430;
+        --muted: #5f6b7a;
+        --line: #dde2ea;
+        --accent: #2b6cb0;
+        --ok: #227a3f;
+        --err: #a33131;
+        --warn: #9a6b11;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+        padding: 0.9rem 1rem;
+      }
+      .wrap { max-width: 980px; margin: 0 auto; }
+      .top {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.8rem;
+        align-items: center;
+      }
+      .brand {
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--text);
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+      }
+      nav a, nav button {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 0.35rem 0.65rem;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      nav a.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      main { padding: 1rem; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .flash {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        background: #f0f4ff;
+      }
+      .flash.success { border-color: #bfe4c8; color: var(--ok); background: #eefaf1; }
+      .flash.error { border-color: #efc2c2; color: var(--err); background: #fff3f3; }
+      .flash.warning { border-color: #efd89f; color: var(--warn); background: #fff9e9; }
+      form { margin: 0; }
+      .row { display: grid; gap: 0.55rem; margin-bottom: 0.7rem; }
+      label { font-size: 0.92rem; color: var(--muted); }
+      input, textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.55rem;
+        font: inherit;
+      }
+      textarea { min-height: 130px; resize: vertical; }
+      button {
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: white;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+      }
+      .muted { color: var(--muted); }
+      .grid-2 {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+      th, td {
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        padding: 0.55rem 0.4rem;
+        vertical-align: top;
+      }
+      .actions {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+      }
+      .link {
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.28rem 0.55rem;
+        color: var(--text);
+        background: #fff;
+      }
+      .danger {
+        background: #fff;
+        color: var(--err);
+        border-color: #efc2c2;
+      }
+      .pill {
+        display: inline-block;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        padding: 0.15rem 0.5rem;
+        font-size: 0.78rem;
+      }
+      .pill.read { background: #eefaf1; border-color: #bfe4c8; color: var(--ok); }
+      .pill.unread { background: #fff3f3; border-color: #efc2c2; color: var(--err); }
+      @media (max-width: 640px) {
+        .top { align-items: flex-start; flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap top">
+        <a class="brand" href="{% url 'turbomessage_index' %}">TurboMessage</a>
+        <nav>
+          {% if current_user %}
+            <span class="muted">{{ current_user.username }} · {{ current_user.id|slice:':8' }}</span>
+            <a href="{% url 'turbomessage_dashboard' %}">Bandeja</a>
+            <a class="primary" href="{% url 'turbomessage_compose' %}">Escribir</a>
+            <form method="post" action="{% url 'turbomessage_logout' %}">
+              {% csrf_token %}
+              <button type="submit">Cerrar sesion</button>
+            </form>
+          {% else %}
+            <a href="{% url 'turbomessage_login' %}">Iniciar sesion</a>
+            <a class="primary" href="{% url 'turbomessage_register' %}">Registro</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      {% if flash %}
+        <div class="flash {{ flash.level }}">{{ flash.message }}</div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
