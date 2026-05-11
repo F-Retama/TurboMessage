@@ -6,24 +6,15 @@
 
   <p class="muted" style="margin-top: 0;">
     {% if is_sender %}
-      Eres emisor.
+    Eres emisor.
     {% elif is_recipient %}
-      Eres receptor.
+    Eres receptor.
     {% endif %}
   </p>
 
   <div class="row"><strong>De:</strong> {{ email.sender_id }}</div>
   <div class="row"><strong>Para:</strong> {{ email.recipient_id }}</div>
   <div class="row"><strong>Tema:</strong> {{ email.subject }}</div>
-  <div class="row"><strong>Fecha:</strong> {{ email.created_at }}</div>
-  <div class="row">
-    <strong>Estado:</strong>
-    {% if email.is_read %}
-      <span class="pill read">Leido</span>
-    {% else %}
-      <span class="pill unread">No leido</span>
-    {% endif %}
-  </div>
 
   <hr style="border: 0; border-top: 1px solid #dde2ea; margin: 1rem 0;" />
 

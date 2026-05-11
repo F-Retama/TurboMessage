@@ -95,7 +95,7 @@ Archivo: `proto/turbomessage.proto`.
 
 - Registro persistente de usuarios (username/password). Solucion: RPC `Register` + insercion en SQLite.
 - Login de usuarios. Solucion: RPC `Login` + validacion de credenciales en `storage.py`.
-- Identificador alfanumerico unico por usuario. Solucion: generacion de `user_id` con `uuid` y llave unica.
+- Identificador alfanumerico unico por usuario. Solucion: generacion de `user_id` con formato `[username]@turbo.com` y llave unica.
 - Envio de correo solo a usuario existente. Solucion: `SendEmail` valida existencia de emisor y receptor antes de insertar.
 - Correo con id, tema, emisor, destinatario y cuerpo. Solucion: tabla `emails` + `id` autoincremental en SQLite.
 - Sin adjuntos. Solucion: el contrato protobuf no define campos de archivo.
@@ -137,7 +137,7 @@ source .venv/bin/activate
 pip install "Django>=5.0,<6.0" "grpcio>=1.65.0" "grpcio-tools>=1.65.0" "protobuf>=5.0.0"
 ```
 
-2. Generar stubs:
+2. Generar stubs (ya se encontraran en `grpc_server/generated/`):
 
 ```bash
 python -m grpc_tools.protoc \
@@ -161,3 +161,16 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 5. Abrir `http://localhost:8000/`.
+
+## 8) Purgar base de datos
+
+Si necesitas reiniciar por completo los usuarios y correos, borra el archivo SQLite y deja que el servidor lo regenere:
+
+1. Deten el servidor gRPC.
+2. Elimina el archivo de base de datos:
+
+```bash
+rm grpc_server/data/turbomessage.db
+```
+
+3. Arranca de nuevo el servidor gRPC (`python -m grpc_server.server`).

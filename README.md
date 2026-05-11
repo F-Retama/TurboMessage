@@ -38,7 +38,7 @@ La aplicacion web opera como cliente de servicios gRPC; la logica central no se 
 ## Cobertura de requerimientos (sintesis)
 
 - Registro/login persistente: `Register` y `Login` sobre SQLite.
-- ID unico de usuario: generado con `uuid`.
+- ID unico de usuario: generado con formato `[username]@turbo.com`.
 - Envio valido solo a usuario existente: validacion previa en `SendEmail`.
 - Correo con id, tema, emisor, receptor y cuerpo: entidad `Email` y tabla `emails`.
 - Sin adjuntos: contrato protobuf sin campos de archivo.
@@ -85,3 +85,16 @@ python manage.py runserver 0.0.0.0:8000
 5. Acceso web:
 
 - `http://localhost:8000/`
+
+## Purgar base de datos
+
+Si necesitas reiniciar por completo los usuarios y correos, borra el archivo SQLite y deja que el servidor lo regenere:
+
+1. Deten el servidor gRPC.
+2. Elimina el archivo de base de datos:
+
+```bash
+rm grpc_server/data/turbomessage.db
+```
+
+3. Arranca de nuevo el servidor gRPC (`python -m grpc_server.server`).

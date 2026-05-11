@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from functools import wraps
 from typing import Callable
 
@@ -40,7 +39,6 @@ def _render(request: HttpRequest, template: str, context: dict) -> HttpResponse:
 
 
 def _email_to_dict(email) -> dict:
-    created = datetime.fromtimestamp(int(email.created_at_unix)).strftime("%Y-%m-%d %H:%M")
     return {
         "id": int(email.id),
         "sender_id": email.sender_id,
@@ -48,7 +46,6 @@ def _email_to_dict(email) -> dict:
         "subject": email.subject,
         "body": email.body,
         "is_read": bool(email.is_read),
-        "created_at": created,
     }
 
 

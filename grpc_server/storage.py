@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sqlite3
 import threading
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -71,7 +70,7 @@ class Storage:
             conn = self._conn()
             try:
                 conn.execute("BEGIN IMMEDIATE")
-                user_id = uuid.uuid4().hex
+                user_id = f"{username}@turbo.com"
                 conn.execute(
                     """
                     INSERT INTO users(id, username, password, created_at_unix)

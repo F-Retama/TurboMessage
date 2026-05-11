@@ -3,13 +3,13 @@
 {% block content %}
 <section class="panel" style="max-width: 760px;">
   <h2 style="margin-top: 0;">Nuevo correo</h2>
-  <p class="muted">Usa el ID del destinatario (el identificador alfanumerico del usuario).</p>
+  <p class="muted">Usa el formato [username]@turbo.com (ej. ana@turbo.com).</p>
 
   <form method="post">
     {% csrf_token %}
     <div class="row">
       <label for="recipient_id">ID del destinatario</label>
-      <input id="recipient_id" name="recipient_id" required />
+      <input id="recipient_id" name="recipient_id" placeholder="username@turbo.com" required />
     </div>
     <div class="row">
       <label for="subject">Tema</label>

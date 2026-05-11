@@ -39,7 +39,7 @@ La arquitectura se divide en tres capas:
 
 - Registro persistente de usuarios con username/password. Solucion aplicada: RPC `Register` e insercion en SQLite.
 - Inicio de sesion por credenciales. Solucion aplicada: RPC `Login` con validacion directa de usuario y password.
-- ID alfanumerico unico por usuario. Solucion aplicada: generacion de `user_id` con `uuid` y restriccion unica.
+- ID alfanumerico unico por usuario. Solucion aplicada: generacion de `user_id` con formato `[username]@turbo.com` y restriccion unica.
 - Envio de correo solo a usuarios existentes. Solucion aplicada: `SendEmail` valida emisor y receptor antes de persistir.
 - Correo con identificador autogenerado, tema, emisor, receptor y cuerpo. Solucion aplicada: tabla `emails` con `id` autoincremental y campos obligatorios.
 - Sin soporte de adjuntos. Solucion aplicada: contrato protobuf sin campos de archivos.
