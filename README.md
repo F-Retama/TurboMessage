@@ -87,6 +87,7 @@ python manage.py runserver 0.0.0.0:8000
 - `http://localhost:8000/`
 
 6. Ya en la página web, puedes crear una usuario en:
+
 No tienes cuenta? `Registrarme`
 
 7. De aquí puedes:
