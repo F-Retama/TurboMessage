@@ -86,6 +86,15 @@ python manage.py runserver 0.0.0.0:8000
 
 - `http://localhost:8000/`
 
+6. Ya en la página web, puedes crear una usuario en:
+No tienes cuenta? `Registrarme`
+
+7. De aquí puedes:
+- Escribir correos
+- Ver los correos de la bandeja y leerlos
+- Borrar correos
+- Cerrar sesión
+
 ## Purgar base de datos
 
 Si necesitas reiniciar por completo los usuarios y correos, borra el archivo SQLite y deja que el servidor lo regenere:
