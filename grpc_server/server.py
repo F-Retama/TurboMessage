@@ -37,7 +37,6 @@ class TurboMessageService(turbomessage_pb2_grpc.TurboMessageServiceServicer):
             subject=str(email["subject"]),
             body=str(email["body"]),
             is_read=bool(email["is_read"]),
-            created_at_unix=int(email["created_at_unix"]),
         )
 
     def Register(self, request, context):  # noqa: N802 (gRPC naming)

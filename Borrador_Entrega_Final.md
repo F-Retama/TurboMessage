@@ -35,21 +35,50 @@ La arquitectura se divide en tres capas:
 5. `storage.py` aplica reglas, persiste en SQLite y devuelve resultado.
 6. `server.py` responde `*Reply` y Django renderiza resultado al usuario.
 
+### Registro y persistencia de usuarios
+
+El registro es el caso mas representativo del flujo distribuido porque cruza las tres capas y deja evidencia persistente:
+
+1. El usuario llena el formulario `/register/` y Django valida que los campos no esten vacios.
+2. El cliente gRPC crea un `AuthRequest` y envia `Register` al servidor.
+3. El servidor gRPC delega a `storage.register`, que abre transaccion, genera `user_id` con formato `username@turbo.com` e inserta en SQLite.
+4. Si el username ya existe, la base de datos rechaza la operacion y se responde con error controlado.
+5. El frontend recibe `UserReply`; si es exitoso, guarda el `user_id` en sesion y redirige a la bandeja.
+
+### Envio de correos y validaciones
+
+El envio aplica reglas funcionales y de capacidad desde el backend:
+
+1. El usuario escribe un correo en `/compose/` y Django valida los campos obligatorios.
+2. El cliente gRPC envia `SendEmailRequest` con emisor, receptor, tema y cuerpo.
+3. `storage.send_email` valida existencia de usuarios y limites de inbox/outbox dentro de una transaccion.
+4. Si es valido, se inserta en `emails` y se regresa un `IdReply` con el id autogenerado.
+5. Django muestra el resultado al usuario y vuelve a la bandeja.
+
+### Listado, lectura y borrado
+
+El manejo de bandejas y acciones sobre correos sigue este flujo:
+
+1. `/mailbox/` llama `ListEmails` para traer correos visibles del usuario.
+2. Django separa inbox/outbox segun `recipient_id` y `sender_id`.
+3. `ReadEmail` valida acceso y marca `is_read` si el receptor abre el correo por primera vez.
+4. `DeleteEmail` marca eliminaciones por usuario y elimina fisicamente cuando ambos lo borran.
+
 ## Cumplimiento de requerimientos principales
 
-- Registro persistente de usuarios con username/password. Solucion aplicada: RPC `Register` e insercion en SQLite.
-- Inicio de sesion por credenciales. Solucion aplicada: RPC `Login` con validacion directa de usuario y password.
-- ID alfanumerico unico por usuario. Solucion aplicada: generacion de `user_id` con formato `[username]@turbo.com` y restriccion unica.
-- Envio de correo solo a usuarios existentes. Solucion aplicada: `SendEmail` valida emisor y receptor antes de persistir.
-- Correo con identificador autogenerado, tema, emisor, receptor y cuerpo. Solucion aplicada: tabla `emails` con `id` autoincremental y campos obligatorios.
-- Sin soporte de adjuntos. Solucion aplicada: contrato protobuf sin campos de archivos.
-- Lectura y borrado de correos por usuario. Solucion aplicada: RPCs `ReadEmail` y `DeleteEmail` con control por `user_id`.
-- Estado de correo `no leido/leido` persistente y cambio automatico en la primera lectura del receptor. Solucion aplicada: campo `is_read` actualizado en lectura.
-- Persistencia de mensajes para entrega asincrona (receptor no necesita estar conectado para recibir despues). Solucion aplicada: almacenamiento permanente en SQLite + `ListEmails`.
-- Limites de capacidad: inbox maximo 5, outbox maximo 5. Solucion aplicada: validaciones de conteo previas al insert en `storage.py`.
-- Error cuando se intenta enviar a una inbox llena. Solucion aplicada: respuesta `IdReply` con `result.ok=false` y mensaje de rechazo.
-- Operacion concurrente con mitigacion de condiciones de carrera en operaciones criticas. Solucion aplicada: `BEGIN IMMEDIATE` y lock de escritura.
-- Uso de Django solo como front-end/consumidor gRPC, sin usar ORM para negocio central. Solucion aplicada: controladores web en Django y logica/persistencia en backend gRPC.
+- Registro persistente de usuarios con username/password. Se logra con `Register`, que escribe en SQLite bajo transaccion.
+- Inicio de sesion por credenciales. `Login` valida contra la tabla `users` y devuelve `user_id` para la sesion.
+- ID alfanumerico unico por usuario. Se forma como `[username]@turbo.com` y se protege con restriccion unica.
+- Envio de correo solo a usuarios existentes. `SendEmail` valida existencia de emisor y receptor antes de insertar.
+- Correo con identificador autogenerado, tema, emisor, receptor y cuerpo. La tabla `emails` define `id` autoincremental y campos obligatorios.
+- Sin soporte de adjuntos. El contrato protobuf no expone campos de archivos.
+- Lectura y borrado de correos por usuario. `ReadEmail` y `DeleteEmail` validan ownership y responden segun el usuario.
+- Estado de correo `no leido/leido` persistente. `is_read` cambia al primer acceso del receptor.
+- Persistencia de mensajes y entrega asincrona. Los correos quedan en SQLite y se consultan con `ListEmails`.
+- Limites de capacidad (inbox/outbox maximo 5). `storage.py` cuenta antes de insertar y rechaza si excede.
+- Error al enviar a inbox llena. `IdReply` retorna `ok=false` con mensaje descriptivo.
+- Operacion concurrente controlada. `BEGIN IMMEDIATE` y `RLock` serializan escrituras criticas.
+- Django solo como front-end gRPC. La logica de negocio vive en el backend y el ORM no se usa.
 
 ## Conclusiones
 

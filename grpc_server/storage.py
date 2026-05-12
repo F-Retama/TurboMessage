@@ -19,8 +19,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    created_at_unix INTEGER NOT NULL
+    password TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS emails (
@@ -32,7 +31,6 @@ CREATE TABLE IF NOT EXISTS emails (
     is_read INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0, 1)),
     sender_deleted INTEGER NOT NULL DEFAULT 0 CHECK (sender_deleted IN (0, 1)),
     recipient_deleted INTEGER NOT NULL DEFAULT 0 CHECK (recipient_deleted IN (0, 1)),
-    created_at_unix INTEGER NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users (id),
     FOREIGN KEY (recipient_id) REFERENCES users (id)
 );
@@ -73,8 +71,8 @@ class Storage:
                 user_id = f"{username}@turbo.com"
                 conn.execute(
                     """
-                    INSERT INTO users(id, username, password, created_at_unix)
-                    VALUES (?, ?, ?, strftime('%s', 'now'))
+                    INSERT INTO users(id, username, password)
+                    VALUES (?, ?, ?)
                     """,
                     (user_id, username, password),
                 )
@@ -137,9 +135,9 @@ class Storage:
                     """
                     INSERT INTO emails(
                         sender_id, recipient_id, subject, body, is_read,
-                        sender_deleted, recipient_deleted, created_at_unix
+                        sender_deleted, recipient_deleted
                     )
-                    VALUES (?, ?, ?, ?, 0, 0, 0, strftime('%s', 'now'))
+                    VALUES (?, ?, ?, ?, 0, 0, 0)
                     """,
                     (sender_id, recipient_id, subject, body),
                 )
@@ -162,11 +160,11 @@ class Storage:
                 return False, "user does not exist", []
             rows = conn.execute(
                 """
-                SELECT id, sender_id, recipient_id, subject, body, is_read, created_at_unix
+                     SELECT id, sender_id, recipient_id, subject, body, is_read
                 FROM emails
                 WHERE (sender_id = ? AND sender_deleted = 0)
                    OR (recipient_id = ? AND recipient_deleted = 0)
-                ORDER BY created_at_unix DESC, id DESC
+                     ORDER BY id DESC
                 """,
                 (user_id, user_id),
             ).fetchall()
@@ -184,7 +182,7 @@ class Storage:
                 row = conn.execute(
                     """
                     SELECT id, sender_id, recipient_id, subject, body, is_read,
-                           sender_deleted, recipient_deleted, created_at_unix
+                              sender_deleted, recipient_deleted
                     FROM emails
                     WHERE id = ?
                     """,
@@ -203,7 +201,7 @@ class Storage:
 
                 result_row = conn.execute(
                     """
-                    SELECT id, sender_id, recipient_id, subject, body, is_read, created_at_unix
+                    SELECT id, sender_id, recipient_id, subject, body, is_read
                     FROM emails
                     WHERE id = ?
                     """,

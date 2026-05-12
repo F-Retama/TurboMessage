@@ -34,7 +34,7 @@ message Email {
   string subject = 4;
   string body = 5;
   bool is_read = 6;
-  int64 created_at_unix = 7;
+  reserved 7;
 }
 
 message EmailActionRequest {

@@ -89,19 +89,49 @@ Archivo: `proto/turbomessage.proto`.
 6. `server.py` responde `*Reply`.
 7. Django renderiza template con feedback.
 
+### 5.1) Registro de usuario y persistencia (paso a paso)
+
+Este flujo explica como los tres componentes interactuan para cumplir el lineamiento de registro persistente:
+
+1. El usuario completa el formulario en `/register/`; `views.py` valida que haya username y password.
+2. `grpc_client.py` construye `AuthRequest` y llama a `Register` via gRPC.
+3. `server.py` recibe el RPC y delega la operacion a `storage.register`.
+4. `storage.register` abre conexion SQLite, inicia `BEGIN IMMEDIATE`, genera `user_id` con formato `username@turbo.com` e inserta en `users`.
+5. Si el username ya existe, SQLite dispara `IntegrityError`, se revierte la transaccion y se regresa un error claro.
+6. El `UserReply` vuelve a Django; si `ok=true`, se guardan `tm_user_id` y `tm_username` en sesion y el usuario entra a su bandeja.
+
+### 5.2) Envio de correo y validaciones
+
+Este flujo resume como se cumplen los lineamientos de envio y capacidad:
+
+1. El usuario entra a `/compose/` y Django valida que destinatario, tema y cuerpo existan.
+2. `grpc_client.py` envia `SendEmailRequest` con `sender_id`, `recipient_id`, `subject` y `body`.
+3. `storage.send_email` abre transaccion, valida que emisor y receptor existan y revisa limites de inbox/outbox.
+4. Si todo es valido, inserta el correo en `emails` y devuelve un `IdReply` con el id autogenerado.
+5. Django muestra el resultado con un mensaje flash y regresa a la bandeja.
+
+### 5.3) Listado, lectura y borrado de correos
+
+Este flujo explica como se consultan y administran los mensajes:
+
+1. `/mailbox/` llama `ListEmails` y el backend retorna todos los correos visibles del usuario.
+2. Django separa inbox/outbox segun `recipient_id` y `sender_id` para la presentacion.
+3. Al abrir un correo, `ReadEmail` valida ownership y marca `is_read` si el receptor lo lee por primera vez.
+4. Al borrar, `DeleteEmail` marca eliminaciones por emisor o receptor y solo borra fisicamente si ambos lo hicieron.
+
 ## 6) Cumplimiento de lineamientos y rubrica
 
 ### Requerimientos funcionales cubiertos
 
-- Registro persistente de usuarios (username/password). Solucion: RPC `Register` + insercion en SQLite.
-- Login de usuarios. Solucion: RPC `Login` + validacion de credenciales en `storage.py`.
-- Identificador alfanumerico unico por usuario. Solucion: generacion de `user_id` con formato `[username]@turbo.com` y llave unica.
-- Envio de correo solo a usuario existente. Solucion: `SendEmail` valida existencia de emisor y receptor antes de insertar.
-- Correo con id, tema, emisor, destinatario y cuerpo. Solucion: tabla `emails` + `id` autoincremental en SQLite.
-- Sin adjuntos. Solucion: el contrato protobuf no define campos de archivo.
-- Lectura y borrado de correos. Solucion: RPCs `ReadEmail` y `DeleteEmail` con validacion de ownership.
-- Estado `no leido/leido` persistente y cambio al leer. Solucion: campo `is_read` y actualizacion en primera lectura del receptor.
-- Persistencia de mensajes y entrega asincrona (usuario receptor puede estar desconectado). Solucion: almacenamiento permanente en SQLite y consulta diferida con `ListEmails`.
+- Registro persistente de usuarios (username/password). Se resuelve con `Register`, que valida datos en Django y persiste en SQLite via `storage.register`.
+- Login de usuarios. `Login` busca credenciales en `storage.py` y regresa `user_id` para iniciar sesion en Django.
+- Identificador alfanumerico unico por usuario. Se genera con el formato `[username]@turbo.com` y la tabla `users` aplica unicidad.
+- Envio de correo solo a usuario existente. `SendEmail` verifica emisor/receptor en SQLite antes de insertar.
+- Correo con id, tema, emisor, destinatario y cuerpo. Se almacena en la tabla `emails` con `id` autoincremental.
+- Sin adjuntos. El contrato protobuf no define campos de archivo, lo que bloquea esa funcionalidad.
+- Lectura y borrado de correos. `ReadEmail` y `DeleteEmail` validan ownership en el backend antes de responder.
+- Estado `no leido/leido` persistente y cambio al leer. `is_read` se actualiza solo cuando el receptor abre el correo.
+- Persistencia de mensajes y entrega asincrona. `ListEmails` consulta SQLite y entrega lo que haya aunque el receptor estuviera desconectado.
 
 ### Reglas de capacidad
 
