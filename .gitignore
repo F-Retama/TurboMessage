@@ -22,7 +22,7 @@ staticfiles/
 Thumbs.db
 
 # Local planning/checklists
-CHECKLIST_LINEAMIENTOS.md
+ReporteEjecutivo_TurboMessage.docx
 
 # Local database and generated gRPC code
 grpc_server/data/*.db
