@@ -88,7 +88,7 @@ def serve(host: str = "0.0.0.0", port: int = DEFAULT_GRPC_PORT) -> grpc.Server:
     storage = Storage()
     storage.init_db()
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=32))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=33))
     turbomessage_pb2_grpc.add_TurboMessageServiceServicer_to_server(
         TurboMessageService(storage),
         server,
